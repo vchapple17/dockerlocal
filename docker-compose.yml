@@ -1,0 +1,118 @@
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+      - '8880:8880'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx
+      - ${PROJECT_FILES}:/project_files
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.2
+
+  goals:
+    build:
+      context: docker/php-8.3-fpm
+    container_name: goals
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${PROJECT_FILES}:/project_files
+      - ./php/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./php/pool.conf:/usr/local/etc/pool.conf
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./php/supervisord.conf:/etc/supervisor/supervisord.conf
+      - ./php/supervisor_conf_d:/etc/supervisor/conf.d
+    extra_hosts:
+        - "goals.test:192.117.0.2" # to nginx
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.5
+
+  profile:
+    build:
+      context: docker/php-8.3-fpm
+    container_name: profile
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${PROJECT_FILES}:/project_files
+      - ./php/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./php/pool.conf:/usr/local/etc/pool.conf
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./php/supervisord.conf:/etc/supervisor/supervisord.conf
+      - ./php/supervisor_conf_d:/etc/supervisor/conf.d
+    extra_hosts:
+        - "valeriechapple.test:192.117.0.2" # to nginx
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.6
+
+  postgres:
+    image: "${POSTGRES_IMAGE}"
+    restart: always
+    container_name: postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - "${POSTGRES_DATA_DIR}:/var/lib/postgresql/data"
+    environment:
+      - "POSTGRES_PASSWORD=${POSTGRES_PW}"
+      - "POSTGRES_USER=${POSTGRES_USER}"
+      - "POSTGRES_DB=${POSTGRES_DB}"
+#    extra_hosts:
+#      - "localhost:127.0.0.1"
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.7
+
+  # redis:
+  #   container_name: redis
+  #   image: redis
+  #   hostname: redis
+  #   restart: always
+  #   command: ["redis-server", "--appendonly", "yes"]
+  #   networks:
+  #     dev_host:
+  #       ipv4_address: 192.117.0.8
+  #
+  pgadmin4:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    restart: always
+    volumes:
+      - ${PGADMIN_CONF_DIR}:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.4
+
+  mailcatcher:
+    container_name: mailcatcher
+    image: schickling/mailcatcher
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    restart: always
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.3
+
+networks:
+  dev_host:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet:  192.117.0.0/16
