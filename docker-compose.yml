@@ -13,6 +13,10 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/logs:/var/log/nginx
       - ${PROJECT_FILES}:/project_files
+      - ./nginx/template-variables:/etc/nginx/templates/10-variables.conf.template:ro
+    environment:
+      - PROFILE_DIR
+      - PROJECT_FILES
     networks:
       dev_host:
         ipv4_address: 192.117.0.2

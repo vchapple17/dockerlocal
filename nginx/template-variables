@@ -1,0 +1,7 @@
+map $host $profile_dir {
+  default $PROFILE_DIR;
+}
+
+map $host $project_files {
+  default $PROJECT_FILES;
+}
