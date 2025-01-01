@@ -24,6 +24,10 @@ services:
   goals:
     build:
       context: docker/php-8.3-fpm
+      dockerfile: Dockerfile
+      args:
+        - RUNNING_USER=${RUNNING_USER}
+        - RUNNING_GROUP=${RUNNING_GROUP}
     container_name: goals
     restart: always
     volumes:
@@ -43,6 +47,10 @@ services:
   profile:
     build:
       context: docker/php-8.3-fpm
+      dockerfile: Dockerfile
+      args:
+        - RUNNING_USER=${RUNNING_USER}
+        - RUNNING_GROUP=${RUNNING_GROUP}
     container_name: profile
     restart: always
     volumes:
