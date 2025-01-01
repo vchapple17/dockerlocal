@@ -15,7 +15,7 @@ services:
       - ${PROJECT_FILES}:/project_files
       - ./nginx/template-variables:/etc/nginx/templates/10-variables.conf.template:ro
     environment:
-      - PROFILE_DIR
+      - PORTFOLIO_DIR
       - PROJECT_FILES
     networks:
       dev_host:
@@ -44,14 +44,14 @@ services:
       dev_host:
         ipv4_address: 192.117.0.5
 
-  profile:
+  portfolio:
     build:
       context: docker/php-8.3-fpm
       dockerfile: Dockerfile
       args:
         - RUNNING_USER=${RUNNING_USER}
         - RUNNING_GROUP=${RUNNING_GROUP}
-    container_name: profile
+    container_name: portfolio
     restart: always
     volumes:
       - /etc/localtime:/etc/localtime:ro

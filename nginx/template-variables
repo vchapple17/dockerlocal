@@ -1,5 +1,5 @@
-map $host $profile_dir {
-  default $PROFILE_DIR;
+map $host $portfolio_dir {
+  default $PORTFOLIO_DIR;
 }
 
 map $host $project_files {
