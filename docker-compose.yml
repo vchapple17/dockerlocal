@@ -1,4 +1,29 @@
 services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2G
+        reservations:
+          cpus: '0.2'
+          memory: 1G
+    restart: unless-stopped
+    ports:
+      - "8080:8080"  # Jenkins Web Interface
+      - "50000:50000"  # Jenkins Agent Communication
+    volumes:
+      - ${JENKINS_HOME}:/var/jenkins_home
+    extra_hosts:
+      - "jenkins.test:192.117.0.2" # to nginx
+    environment:
+      - JENKINS_ARGS="--prefix=/jenkins --httpsPort=-1 --httpPort=8080"
+    networks:
+      dev_host:
+        ipv4_address: 192.117.0.8
+
   nginx:
     container_name: nginx
     image: nginx:stable-alpine
@@ -14,35 +39,13 @@ services:
       - ./nginx/logs:/var/log/nginx
       - ${PROJECT_FILES}:/project_files
       - ./nginx/template-variables:/etc/nginx/templates/10-variables.conf.template:ro
+      - ${JENKINS_HOME}:/var/jenkins_home
     environment:
       - PORTFOLIO_DIR
       - PROJECT_FILES
     networks:
       dev_host:
         ipv4_address: 192.117.0.2
-
-  goals:
-    build:
-      context: docker/php-8.3-fpm
-      dockerfile: Dockerfile
-      args:
-        - RUNNING_USER=${RUNNING_USER}
-        - RUNNING_GROUP=${RUNNING_GROUP}
-    container_name: goals
-    restart: always
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${PROJECT_FILES}:/project_files
-      - ./php/php-fpm.conf:/usr/local/etc/php-fpm.conf
-      - ./php/pool.conf:/usr/local/etc/pool.conf
-      - ./php/php.ini:/usr/local/etc/php/php.ini
-      - ./php/supervisord.conf:/etc/supervisor/supervisord.conf
-      - ./php/supervisor_conf_d:/etc/supervisor/conf.d
-    extra_hosts:
-        - "goals.test:192.117.0.2" # to nginx
-    networks:
-      dev_host:
-        ipv4_address: 192.117.0.5
 
   portfolio:
     build:
@@ -62,7 +65,7 @@ services:
       - ./php/supervisord.conf:/etc/supervisor/supervisord.conf
       - ./php/supervisor_conf_d:/etc/supervisor/conf.d
     extra_hosts:
-        - "valeriechapple.test:192.117.0.2" # to nginx
+        - "portfolio.test:192.117.0.2" # to nginx
     networks:
       dev_host:
         ipv4_address: 192.117.0.6
@@ -93,7 +96,7 @@ services:
   #   command: ["redis-server", "--appendonly", "yes"]
   #   networks:
   #     dev_host:
-  #       ipv4_address: 192.117.0.8
+  #       ipv4_address: 192.117.0.
   #
   pgadmin4:
     container_name: pgadmin4

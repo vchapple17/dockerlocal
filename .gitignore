@@ -13,3 +13,5 @@ mysql/**
 /pgadmin/*
 !/pgadmin/.gitkeep
 /postgres/data/
+/nginx/conf.d/10-variables.conf
+/nginx/conf.d/certs/nginx-selfsigned-cert.key
