@@ -1,29 +1,4 @@
 services:
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 2G
-        reservations:
-          cpus: '0.2'
-          memory: 1G
-    restart: unless-stopped
-    ports:
-      - "8080:8080"  # Jenkins Web Interface
-      - "50000:50000"  # Jenkins Agent Communication
-    volumes:
-      - ${JENKINS_HOME}:/var/jenkins_home
-    extra_hosts:
-      - "jenkins.test:192.117.0.2" # to nginx
-    environment:
-      - JENKINS_ARGS="--prefix=/jenkins --httpsPort=-1 --httpPort=8080"
-    networks:
-      dev_host:
-        ipv4_address: 192.117.0.8
-
   nginx:
     container_name: nginx
     image: nginx:stable-alpine
@@ -39,7 +14,6 @@ services:
       - ./nginx/logs:/var/log/nginx
       - ${PROJECT_FILES}:/project_files
       - ./nginx/template-variables:/etc/nginx/templates/10-variables.conf.template:ro
-      - ${JENKINS_HOME}:/var/jenkins_home
     environment:
       - PORTFOLIO_DIR
       - PROJECT_FILES
